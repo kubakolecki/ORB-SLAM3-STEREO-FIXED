@@ -249,23 +249,25 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
         exit(-1);
     }
 
-    cv::Mat imLeftToFeed, imRightToFeed;
+    //cv::Mat imLeftToFeed, imRightToFeed;
     if(settings_ && settings_->needToRectify()){
+        //std::cout << "RECTIFYING IMAGES" << std::endl;
+
         cv::Mat M1l = settings_->M1l();
         cv::Mat M2l = settings_->M2l();
         cv::Mat M1r = settings_->M1r();
         cv::Mat M2r = settings_->M2r();
 
-        cv::remap(imLeft, imLeftToFeed, M1l, M2l, cv::INTER_LINEAR);
-        cv::remap(imRight, imRightToFeed, M1r, M2r, cv::INTER_LINEAR);
+        cv::remap(imLeft, mImGrayFedToTrackerLeft, M1l, M2l, cv::INTER_LINEAR);
+        cv::remap(imRight, mImGrayFedToTrackerRight, M1r, M2r, cv::INTER_LINEAR);
     }
     else if(settings_ && settings_->needToResize()){
-        cv::resize(imLeft,imLeftToFeed,settings_->newImSize());
-        cv::resize(imRight,imRightToFeed,settings_->newImSize());
+        cv::resize(imLeft,mImGrayFedToTrackerLeft,settings_->newImSize());
+        cv::resize(imRight,mImGrayFedToTrackerRight,settings_->newImSize());
     }
     else{
-        imLeftToFeed = imLeft.clone();
-        imRightToFeed = imRight.clone();
+        mImGrayFedToTrackerLeft = imLeft.clone();
+        mImGrayFedToTrackerRight = imRight.clone();
     }
 
     // Check mode change
@@ -313,7 +315,7 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
     // std::cout << "start GrabImageStereo" << std::endl;
-    Sophus::SE3f Tcw = mpTracker->GrabImageStereo(imLeftToFeed,imRightToFeed,timestamp,filename);
+    Sophus::SE3f Tcw = mpTracker->GrabImageStereo(mImGrayFedToTrackerLeft,mImGrayFedToTrackerRight,timestamp,filename);
 
     // std::cout << "out grabber" << std::endl;
 
@@ -1336,6 +1338,18 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
     return mTrackedKeyPointsUn;
 }
 
+cv::Mat System::GetImageFedToTrackerLeft()
+{
+    unique_lock<mutex> lock(mMutexState);
+    return mImGrayFedToTrackerLeft;
+}
+
+cv::Mat System::GetImageFedToTrackerRight()
+{
+    unique_lock<mutex> lock(mMutexState);
+    return mImGrayFedToTrackerRight;
+}
+
 double System::GetTimeFromIMUInit()
 {
     double aux = mpLocalMapper->GetCurrKFTime()-mpLocalMapper->mFirstTs;
@@ -1543,6 +1557,16 @@ string System::CalculateCheckSum(string filename, int type)
     }
 
     return checksum;
+}
+
+float System::GetUpdatedBase()
+{
+    return settings_->b();
+}
+
+float System::GetParamOfFirstCamera(int i)
+{
+    return settings_->camera1()->getParameter(i);
 }
 
 } //namespace ORB_SLAM

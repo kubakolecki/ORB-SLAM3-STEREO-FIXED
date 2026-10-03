@@ -508,6 +508,14 @@ namespace ORB_SLAM3 {
         cv::initUndistortRectifyMap(K2, camera2DistortionCoef(), R_r2_u2, P2.rowRange(0, 3).colRange(0, 3),
                                     newImSize_, CV_32F, M1r_, M2r_);
 
+        //TODO: only for debug: remove once not needed:
+        std::cout<<"P1\n";
+        std::cout<<P1<<"\n";
+        std::cout<<"P2\n";
+        std::cout<<P2<<"\n";
+        std::cout<<"newImSize\n";
+        std::cout<<newImSize_<<"\n";
+
         //Update calibration
         calibration1_->setParameter(P1.at<double>(0,0), 0);
         calibration1_->setParameter(P1.at<double>(1,1), 1);

@@ -659,6 +659,8 @@ vector<size_t> Frame::GetFeaturesInArea(const float &x, const float  &y, const f
     vector<size_t> vIndices;
     vIndices.reserve(N);
 
+    //std::cout << "GetFeaturesInArea: r = " << r << std::endl; //TODO remove when not needed
+
     float factorX = r;
     float factorY = r;
 

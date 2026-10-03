@@ -177,6 +177,9 @@ public:
     std::vector<MapPoint*> GetTrackedMapPoints();
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
+    cv::Mat GetImageFedToTrackerLeft();
+    cv::Mat GetImageFedToTrackerRight();
+
     // For debugging
     double GetTimeFromIMUInit();
     bool isLost();
@@ -185,6 +188,9 @@ public:
     void ChangeDataset();
 
     float GetImageScale();
+
+    float GetUpdatedBase();
+    float GetParamOfFirstCamera(int i);
 
 #ifdef REGISTER_TIMES
     void InsertRectTime(double& time);
@@ -230,6 +236,9 @@ private:
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
 
+    //Images that are fed to tracker, they may be rectified or not, depending on the settings but here we images that are actually fed to the tracker
+    cv::Mat mImGrayFedToTrackerLeft, mImGrayFedToTrackerRight;
+
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
     std::thread* mptLocalMapping;
@@ -262,6 +271,7 @@ private:
     string mStrVocabularyFilePath;
 
     Settings* settings_;
+    
 };
 
 }// namespace ORB_SLAM
